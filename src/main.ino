@@ -13,11 +13,12 @@
 
 #include <ArduinoOTA.h>
 
-#include <SSD1306.h>
-// #include <SSD1306Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
 // SSD1306 display(0x3c, 21, 22);
-SSD1306 display(0x3c, 21, 22);
+#define OLED_RESET 4
+Adafruit_SSD1306 display(OLED_RESET);
 
 #include "bme280_sensor.h"
 #include "max6675_sensor.h"
@@ -134,12 +135,6 @@ void setup() {
   Serial.println();
   Serial.println("Connected!");
 
-  display.init();
-  display.clear();
-  //  display.setFont(ArialMT_Plain_10);
-  display.drawString(0, 0, hostname);
-  display.display();
-
 #ifdef IFTTT_API_KEY
   ifttt.trigger("reboot", reboot_reason(rtc_get_reset_reason(0)),  reboot_reason(rtc_get_reset_reason(1)));
 #endif
@@ -182,6 +177,15 @@ void setup() {
       else if (error == OTA_END_ERROR) Serial.println("End Failed");
     });
 #endif
+
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.clearDisplay();
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.println("Hello, world!");
+  display.println(hostname);
+  display.println(WiFi.localIP());
+  display.display();
 
   ArduinoOTA.begin();
 
@@ -227,6 +231,12 @@ void loop() {
 #ifdef VERBOSE
     Serial.printf("hightemp %f\n", max6675.temperatureC());
 #endif
+
+    display.clearDisplay();
+    display.setCursor(0,0);
+    display.setTextSize(4);
+    display.println((int)max6675.temperatureC());
+    display.display();
   }
 
 

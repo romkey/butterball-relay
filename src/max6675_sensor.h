@@ -6,7 +6,7 @@
 
 class MAX6675_Sensor : public Sensor {
  public:
-  MAX6675_Sensor(uint16_t update_frequency, uint16_t accuracy, uint16_t precision, boolean calibrated) : Sensor(update_frequency, accuracy, precision, calibrated) {};
+  MAX6675_Sensor(uint16_t update_frequency, uint16_t accuracy, uint16_t precision, boolean calibrated) : Sensor(update_frequency, accuracy, precision, calibrated), _last_read(0) {};
 
   void begin();
   void handle();
@@ -16,6 +16,7 @@ class MAX6675_Sensor : public Sensor {
 
  private:
   MAX6675 _max6675;
+  unsigned long _last_read;
 
   float _temperatureC;
   float _humidity;
