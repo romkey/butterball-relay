@@ -1,8 +1,8 @@
 # The Butterball
 
-Butterball (not associated in any way with the turkey company) is an open-source hardware project based on Furball/Dustball, which are open-source hardware projects intended to help with the research and development of HomeBus, an IoT auto-provisioning framework.
+Butterball (not associated in any way with the turkey company) is an open-source hardware project based on [Furball](https://github.com/HomeBusProjects/furball)/[Dustball](https://github.com/romkey/dustball-client), which are open-source hardware projects intended to help with the research and development of HomeBus, an IoT auto-provisioning framework.
 
-HomeBus is nowhere near ready to go and we want to use Butterball now, so Butterball will start out reporting via a REST API to the Butterball server.
+HomeBus is nowhere near ready to go and we want to use Butterball now, so Butterball will start out reporting via a REST API to the Butterball server. It can also be configured to report to an MQTT server.
 
 The name 'Furball' is an homage to Dave Mills' ["Fuzzball"](https://en.wikipedia.org/wiki/Fuzzball_router), one of the first routers on the nascent Internet.
 
@@ -49,7 +49,7 @@ Try wiring up the I2C devices each one at a time and testing each time to make s
 
 ## Software
 
-Dustball's firmware uses the Arduino SDK for ESP32 and is organized to build using PlatformIO, which runs under Linux, MacOS and Windows.
+Butterball's firmware uses the Arduino SDK for ESP32 and is organized to build using [PlatformIO](https://platformio.org/), which runs under Linux, MacOS and Windows.
 
 The software provides a uniform, abstract interface to each device using the `Sensor` class. The `Sensor` class provides some housekeeping functions to help the software poll the devices at the appropriate intervals.
 

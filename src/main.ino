@@ -180,6 +180,7 @@ void setup() {
 
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   display.clearDisplay();
+  display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(0,0);
   display.println("Hello, world!");
@@ -217,9 +218,9 @@ void loop() {
 #endif
 
 #ifdef VERBOSE
-    Serial.printf("Temperature %f\n", bme280.temperature());
-    Serial.printf("Pressure %f\n", bme280.pressure());
-    Serial.printf("Humidity %f\n", bme280.humidity());
+    Serial.printf("Ambient temperature %f\n", bme280.temperature());
+    Serial.printf("Ambient pressure %f\n", bme280.pressure());
+    Serial.printf("Ambient humidity %f\n", bme280.humidity());
 #endif
   }
 
@@ -229,7 +230,7 @@ void loop() {
 #endif
 
 #ifdef VERBOSE
-    Serial.printf("hightemp %f\n", max6675.temperatureC());
+    Serial.printf("Hightemp %f\n", max6675.temperatureC());
 #endif
 
     display.clearDisplay();
