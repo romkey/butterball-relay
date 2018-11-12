@@ -16,9 +16,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-// SSD1306 display(0x3c, 21, 22);
-#define OLED_RESET 4
-Adafruit_SSD1306 display(OLED_RESET);
+Adafruit_SSD1306 display;
 
 #include "bme280_sensor.h"
 #include "max6675_sensor.h"
@@ -263,7 +261,7 @@ void loop() {
 
 #ifdef REST_API_ENDPOINT
   char buffer[500];
-  snprintf(buffer, 500, "{\"temperature\": %0.2f, \"humidity\": %0.2f, \"pressure\": %0.2f, \"hightemp\": %f }",
+  snprintf(buffer, 500, "{\"temperature\": %0.2f, \"humidity\": %0.2f, \"pressure\": %0.2f, \"hightemp\": %0.2f }",
 	   bme280.temperature(), bme280.humidity(), bme280.pressure(),
 	   max6675.temperatureC());
 

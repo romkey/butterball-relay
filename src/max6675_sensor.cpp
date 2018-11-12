@@ -14,7 +14,6 @@
 #endif
 
 void MAX6675_Sensor::begin() {
-  //  _max6675.begin(CLK, CS, D0);
   _max6675.begin(CLK, CS, D0);
 }
 
