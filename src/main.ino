@@ -120,6 +120,9 @@ const char* reboot_reason(int code) {
   }
 }
 #endif
+
+#define MAC_ADDRESS_STR_LENGTH 6*2 + 5 + 1
+static char mac_address_str[MAC_ADDRESS_STR_LENGTH];
   
 void setup() {
   char hostname[sizeof(FURBALL_HOSTNAME) + 8];
@@ -130,11 +133,24 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Hello World!");
 
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.println("Hello, world!");
+  display.print("Wifi ");
+  display.println(WIFI_SSID);
+  display.display();
+
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
   WiFi.macAddress(mac_address);
   snprintf(hostname, sizeof(hostname), "%s-%02x%02x%02x", FURBALL_HOSTNAME, (int)mac_address[3], (int)mac_address[4], (int)mac_address[5]);
   Serial.printf("Hostname is %s\n", hostname);
+
+  snprintf(mac_address_str, MAC_ADDRESS_STR_LENGTH, "%02x:%02x:%02x:%02x:%02x:%02x",
+	   mac_address[0], mac_address[1], mac_address[2], mac_address[3], mac_address[4], mac_address[5]);
 
 #ifdef ESP32
   WiFi.setHostname(hostname);
@@ -193,12 +209,8 @@ void setup() {
     });
 #endif
 
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(WHITE);
   display.setCursor(0,0);
-  display.println("Hello, world!");
   display.println(hostname);
   display.println(WiFi.localIP());
   display.display();
@@ -233,9 +245,9 @@ void loop() {
 #endif
 
 #ifdef VERBOSE
-    Serial.printf("Ambient temperature %f\n", bme280.temperature());
-    Serial.printf("Ambient pressure %f\n", bme280.pressure());
-    Serial.printf("Ambient humidity %f\n", bme280.humidity());
+    Serial.printf("Ambient temperature %.2f\n", bme280.temperature());
+    Serial.printf("Ambient pressure %.2f\n", bme280.pressure());
+    Serial.printf("Ambient humidity %.2f\n", bme280.humidity());
 #endif
   }
 
@@ -278,10 +290,11 @@ void loop() {
 
 #ifdef REST_API_ENDPOINT
   char buffer[500];
-  snprintf(buffer, 500, "{\"temperature\": %0.2f, \"humidity\": %0.2f, \"pressure\": %0.2f,  \"freeheap\": %d, \"uptime\": %lu, \"high_temperature\": %0.2f }",
+  snprintf(buffer, 500, "{\"temperature\": %0.2f, \"humidity\": %0.2f, \"pressure\": %0.2f,  \"freeheap\": %d, \"uptime\": %lu, \"high_temperature\": %0.2f, \"mac_address\": \"%s\" }",
 	   bme280.temperature(), bme280.humidity(), bme280.pressure(),
 	   ESP.getFreeHeap(), uptime.uptime()/1000,
-	   max6675.temperatureC());
+	   max6675.temperatureC(),
+	   mac_address_str);
 
 #ifdef VERBOSE
     Serial.println(buffer);

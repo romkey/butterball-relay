@@ -30,10 +30,11 @@ If bought through AliExpress, parts cost should run roughly:
 - $6 - ESP32 LOLIN32
 - $2.57 - BME280
 - $1.55 - MAX6675
+- $1.59 - SSD1306-based I2C OLED display
 - $1.41 - K-type thermocouple temperature probe
 - $1 - random resistors, capacitors
 
-Total of roughly $13 in parts before the circuit board.
+Total of roughly $15 in parts before the circuit board, wire, solder.
 
 ## Building The Hardware
 
