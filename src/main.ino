@@ -1,9 +1,19 @@
 #include <Arduino.h>
 
 #include <ESP.h>
+
+#ifdef ESP32
 #include <ESPmDNS.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
+#endif
+
+#ifdef ESP8266
+#include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
+#include <ESP8266HTTPClient.h>
+#endif
+
 
 // config.h contains private information and is not distributed with
 // the project files. Look for config-example.h and edit it to set
@@ -56,12 +66,14 @@ Adafruit_MQTT_Publish freeheap_feed(&mqtt, AIO_USERNAME "/feeds/butterball.freeh
 
 void mqtt_connect(void) {
   int8_t ret;
-
-  return;
+  int tries = 0;
 
   Serial.print("Connecting to Adafruit IO... ");
 
   while ((ret = mqtt.connect()) != 0) {
+    if(tries++ > 3)
+      return;
+
     switch (ret) {
       case 1: Serial.println("Wrong protocol"); break;
       case 2: Serial.println("ID rejected"); break;
@@ -124,7 +136,10 @@ void setup() {
   snprintf(hostname, sizeof(hostname), "%s-%02x%02x%02x", FURBALL_HOSTNAME, (int)mac_address[3], (int)mac_address[4], (int)mac_address[5]);
   Serial.printf("Hostname is %s\n", hostname);
 
+#ifdef ESP32
   WiFi.setHostname(hostname);
+#endif
+
   while(!WiFi.isConnected()) {
     Serial.print(".");
     delay(100);
@@ -137,10 +152,12 @@ void setup() {
   ifttt.trigger("reboot", reboot_reason(rtc_get_reset_reason(0)),  reboot_reason(rtc_get_reset_reason(1)));
 #endif
 
+#ifdef ESP32  
   if(!MDNS.begin(hostname))
     Serial.println("Error setting up MDNS responder!");
   else
     Serial.println("mDNS responder started");
+#endif
 
   Serial.println("MQTT");
 #ifdef AIO_SERVER
@@ -228,7 +245,7 @@ void loop() {
 #endif
 
 #ifdef VERBOSE
-    Serial.printf("Hightemp %f\n", max6675.temperatureC());
+    Serial.printf("Hightemp %0.2f\n", max6675.temperatureC());
 #endif
 
     display.clearDisplay();
@@ -261,8 +278,9 @@ void loop() {
 
 #ifdef REST_API_ENDPOINT
   char buffer[500];
-  snprintf(buffer, 500, "{\"temperature\": %0.2f, \"humidity\": %0.2f, \"pressure\": %0.2f, \"hightemp\": %0.2f }",
+  snprintf(buffer, 500, "{\"temperature\": %0.2f, \"humidity\": %0.2f, \"pressure\": %0.2f,  \"freeheap\": %d, \"uptime\": %lu, \"high_temperature\": %0.2f }",
 	   bme280.temperature(), bme280.humidity(), bme280.pressure(),
+	   ESP.getFreeHeap(), uptime.uptime()/1000,
 	   max6675.temperatureC());
 
 #ifdef VERBOSE
