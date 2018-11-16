@@ -30,14 +30,13 @@ Adafruit_SSD1306 display;
 
 #include "bme280_sensor.h"
 #include "max6675_sensor.h"
+#include "uptime_sensor.h"
+#include "freeheap_sensor.h"
 
 BME280_Sensor bme280(UPDATE_DELAY, 0, 0, false);
 MAX6675_Sensor max6675(UPDATE_DELAY, 0, 0, false);
-
-#include "uptime.h"
-
-Uptime uptime;
-
+Uptime_Sensor uptime(UPDATE_DELAY);
+Freeheap_Sensor freeheap(UPDATE_DELAY);
 
 #ifdef IFTTT_API_KEY
 #include <IFTTTWebhook.h>
@@ -97,6 +96,8 @@ void mqtt_connect(void) {
 
 
 #ifdef IFTTT_API_KEY
+
+#ifdef ESP32
 #include <rom/rtc.h>
 
 const char* reboot_reason(int code) {
@@ -119,6 +120,8 @@ const char* reboot_reason(int code) {
     default : return "NO_MEAN";
   }
 }
+#endif
+
 #endif
 
 #define MAC_ADDRESS_STR_LENGTH 6*2 + 5 + 1
@@ -165,7 +168,11 @@ void setup() {
   Serial.println("Connected!");
 
 #ifdef IFTTT_API_KEY
+#ifdef ESP32
   ifttt.trigger("reboot", reboot_reason(rtc_get_reset_reason(0)),  reboot_reason(rtc_get_reset_reason(1)));
+#else
+  ifttt.trigger("reboot");
+#endif
 #endif
 
 #ifdef ESP32  
@@ -230,7 +237,8 @@ void setup() {
 
 
 void loop() {
-  static unsigned long last_loop = 0;
+  static unsigned long last_update_millis = 0;
+  unsigned updates = 0;
 
   ArduinoOTA.handle();
 
@@ -238,6 +246,8 @@ void loop() {
   max6675.handle();
 
   if(bme280.ready_for_update()) {
+    updates++;
+
 #ifdef AIO_SERVER
     temperature_feed.publish(bme280.temperature());
     pressure_feed.publish(bme280.pressure());
@@ -252,6 +262,8 @@ void loop() {
   }
 
   if(max6675.ready_for_update()) {
+    updates++;
+
 #ifdef AIO_SERVER
     hightemp_feed.publish(max6675.temperatureC());
 #endif
@@ -259,42 +271,59 @@ void loop() {
 #ifdef VERBOSE
     Serial.printf("Hightemp %0.2f\n", max6675.temperatureC());
 #endif
-
-    display.clearDisplay();
-    display.setCursor(0,0);
-    display.setTextSize(4);
-    display.println((int)max6675.temperatureC());
-    display.display();
   }
 
+  display.clearDisplay();
+  display.setCursor(0,0);
+  display.setTextSize(4);
+  display.println((int)max6675.temperatureC());
+  display.display();
 
-  if(millis() - last_loop < UPDATE_DELAY)
-    return;
+  if(uptime.ready_for_update()) {
+    updates++;
 
-  last_loop = millis();
+#ifdef AIO_SERVER
+    uptime_feed.publish((unsigned)uptime.uptime()/1000);
+#endif
+
+#ifdef VERBOSE
+    Serial.printf("Uptime %.2f seconds\n", uptime.uptime()/1000.0);
+#endif
+  }
+
+  if(freeheap.ready_for_update()) {
+    updates++;
+
+#ifdef AIO_SERVER
+    freeheap_feed.publish((unsigned)freeheap.freeheap());
+#endif
+
+#ifdef VERBOSE
+    Serial.printf("Freeheap %lu bytes\n", freeheap.freeheap());
+#endif
+  }
 
 #ifdef AIO_SERVER
   if(! mqtt.ping(3)) {
     if(! mqtt.connected())
       mqtt_connect();
   }
-
-  uptime_feed.publish((unsigned)uptime.uptime()/1000);
-  freeheap_feed.publish(ESP.getFreeHeap());
-#endif
-
-#ifdef VERBOSE
-  Serial.printf("Uptime %.2f seconds\n", uptime.uptime() / 1000.0);
-  Serial.printf("Free heap %u bytes\n", ESP.getFreeHeap());
 #endif
 
 #ifdef REST_API_ENDPOINT
-  char buffer[500];
-  snprintf(buffer, 500, "{\"temperature\": %0.2f, \"humidity\": %0.2f, \"pressure\": %0.2f,  \"freeheap\": %d, \"uptime\": %lu, \"high_temperature\": %0.2f, \"mac_address\": \"%s\" }",
-	   bme280.temperature(), bme280.humidity(), bme280.pressure(),
-	   ESP.getFreeHeap(), uptime.uptime()/1000,
-	   max6675.temperatureC(),
-	   mac_address_str);
+  if(updates) {
+    Serial.printf("REST millis: %lu, last_update_millis: %lu, UPDATE_DELAY: %d\n", millis(), last_update_millis, UPDATE_DELAY);
+  }
+  
+  if(updates && (millis() - last_update_millis > UPDATE_DELAY)) {
+    last_update_millis = millis();
+
+    char buffer[500];
+    snprintf(buffer, 500, "{\"temperature\": %0.2f, \"humidity\": %0.2f, \"pressure\": %0.2f,  \"freeheap\": %d, \"uptime\": %lu, \"high_temperature\": %0.2f, \"mac_address\": \"%s\" }",
+	     bme280.temperature(), bme280.humidity(), bme280.pressure(),
+	     ESP.getFreeHeap(), uptime.uptime()/1000,
+	     max6675.temperatureC(),
+	     mac_address_str);
 
 #ifdef VERBOSE
     Serial.println(buffer);
@@ -302,6 +331,7 @@ void loop() {
 
     post(buffer);
 #endif
+  }
 }
 
 #ifdef REST_API_ENDPOINT
