@@ -19,4 +19,5 @@ class MAX6675_Sensor : public Sensor {
   unsigned long _last_read;
 
   float _temperatureC;
+  float _temperatureF;
 };
