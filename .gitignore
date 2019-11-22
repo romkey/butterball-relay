@@ -33,5 +33,6 @@
 
 .pioenvs
 .piolibdeps
+.pio
 
 config.h
