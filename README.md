@@ -1,4 +1,6 @@
-# The Butterball
+# The Butterball avec Relay
+
+This is a 
 
 Butterball (not associated in any way with the turkey company) is an open-source hardware project based on [Furball](https://github.com/HomeBusProjects/furball)/[Dustball](https://github.com/romkey/dustball-client), which are open-source hardware projects intended to help with the research and development of HomeBus, an IoT auto-provisioning framework.
 

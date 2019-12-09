@@ -1,5 +1,5 @@
-// battery monitoring
-#define VBAT_ENABLE  4
-#define VBAT_READ    32
+#define RELAY_PIN 4
 
-#define NEOPIXEL      13
+// #define MAX_CLK 5
+// #define MAX_CS 23
+// #define MAX_D0 19
