@@ -85,6 +85,7 @@ void setup() {
 
   WiFi.setHostname(hostname);
 
+#if 0
   while(wifiMulti.run() != WL_CONNECTED) {
     Serial.print(".");
     delay(100);
@@ -128,11 +129,14 @@ void setup() {
 
   ArduinoOTA.begin();
   Serial.println("[ota]");
+#endif
 
   display.clearDisplay();
   display.setCursor(0,0);
   display.println(hostname);
+#if 0
   display.println(WiFi.localIP());
+#endif
   display.display();
 
   bme280.begin();
@@ -180,7 +184,7 @@ void loop() {
   display.setCursor(0,0);
   display.setTextSize(2);
   char buf[128];
-  snprintf(buf, 128, "air %d\ntcple %d", (int)bme280.temperature(), (int)max6675.temperatureC());
+  snprintf(buf, 128, "air  %d\ntcpl %d", (int)bme280.temperature(), (int)max6675.temperatureC());
   display.print(buf);
   display.display();
 
@@ -204,7 +208,7 @@ void loop() {
   if(first || (updates && (millis() > next_update_millis))) {
     next_update_millis = millis() + UPDATE_DELAY;
 
-    IPAddress local = WiFi.localIP();
+    IPAddress local = WiFi.status() == WL_CONNECTED ? WiFi.localIP() : IPAddress(0, 0, 0, 0);
     char buffer[500];
 
     if(first) {
