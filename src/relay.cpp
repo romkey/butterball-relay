@@ -6,15 +6,17 @@
 #include "hw.h"
 
 void relay_begin() {
-  pinMode(RELAY_PIN, OUTPUT);
+ pinMode(RELAY_PIN, OUTPUT);
+ pinMode(RELAY_PIN, INPUT_PULLUP);
+ //digitalWrite(RELAY_PIN, LOW);
 }
 
 
-static void relay_on() {
+void relay_on() {
   digitalWrite(RELAY_PIN, HIGH);
 }
 
-static void relay_off() {
+void relay_off() {
   digitalWrite(RELAY_PIN, LOW);
 }
 
@@ -22,6 +24,6 @@ void relay_check(int current_temp) {
   if(current_temp > RELAY_MAX_TEMP)
     relay_off();
 
-  if(current_temp < RELAY_MIN_TEMP)
+  if(current_temp < RELAY_MAX_TEMP)
     relay_on();
 }

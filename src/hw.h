@@ -1,4 +1,4 @@
-#define RELAY_PIN 4
+#define RELAY_PIN 13
 
 // #define MAX_CLK 5
 // #define MAX_CS 23

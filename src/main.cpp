@@ -34,7 +34,7 @@ Freeheap_Sensor freeheap(UPDATE_DELAY);
 
 #define MAC_ADDRESS_STR_LENGTH 6*2 + 5 + 1
 static char mac_address_str[MAC_ADDRESS_STR_LENGTH];
-  
+
 #ifdef BUILD_INFO
 
 #define STRINGIZE_NX(A) #A
@@ -145,6 +145,7 @@ void setup() {
   Serial.println("[max6675]");
 
   relay_begin();
+  relay_off();
   Serial.println("[relay]");
 
   delay(500);
@@ -182,9 +183,9 @@ void loop() {
 
   display.clearDisplay();
   display.setCursor(0,0);
-  display.setTextSize(2);
+  display.setTextSize(1);
   char buf[128];
-  snprintf(buf, 128, "air  %d\ntcpl %d", (int)bme280.temperature(), (int)max6675.temperatureC());
+  snprintf(buf, 128, "air  %d\ntcpl %d\nmaxtmp %d\nmintmp %d", (int)bme280.temperature(), (int)max6675.temperatureC(), (int)RELAY_MAX_TEMP, (int)RELAY_MIN_TEMP);
   display.print(buf);
   display.display();
 
