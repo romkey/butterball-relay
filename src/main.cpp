@@ -178,16 +178,25 @@ void loop() {
     Serial.printf("Hightemp %0.2f\n", max6675.temperatureC());
 #endif
 
-    relay_check(max6675.temperatureC());
   }
 
-  display.clearDisplay();
-  display.setCursor(0,0);
-  display.setTextSize(1);
-  char buf[128];
-  snprintf(buf, 128, "air  %d\ntcpl %d\nmaxtmp %d\nmintmp %d", (int)bme280.temperature(), (int)max6675.temperatureC(), (int)RELAY_MAX_TEMP, (int)RELAY_MIN_TEMP);
-  display.print(buf);
-  display.display();
+  static unsigned long next_relay_display_update = 0;
+
+  if(millis() > next_relay_display_update) {
+    relay_check(max6675.temperatureC());
+
+    display.clearDisplay();
+    display.setCursor(0,0);
+    display.setTextSize(1);
+
+    char buf[128];
+    snprintf(buf, 128, "air  %d\ntcpl %d\nmaxtmp %d\nmintmp %d", (int)bme280.temperature(), (int)max6675.temperatureC(), (int)RELAY_MAX_TEMP, (int)RELAY_MIN_TEMP);
+    display.print(buf);
+    display.display();
+
+    next_relay_display_update = millis() + 1000;
+  }
+
 
   if(uptime.ready_for_update()) {
     updates++;
